@@ -56,7 +56,6 @@
             "PWM Controller",
             "Signal Generation",
             "Timing Module",
-            "Module",
             "PWM Type"
         ],
         "additionalData": {
