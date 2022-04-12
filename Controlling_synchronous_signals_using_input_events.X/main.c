@@ -18,13 +18,13 @@
 *
 */
 
+#include <avr/io.h>
+#include <avr/cpufunc.h>
+
 #define DEAD_TIME_A    4   /* 5 us */
 #define DEAD_TIME_B    4   /* 5 us */
 #define DUTY_CYCLE_A  44   /* 45 us */
 #define DUTY_CYCLE_B  44   /* 45 us */
-
-#include <avr/io.h>
-#include <avr/cpufunc.h>
 
 /* Default fuses configuration:
 - BOD disabled
@@ -46,22 +46,9 @@ FUSES =
 .WDTCFG = PERIOD_OFF_gc | WINDOW_OFF_gc,
 };
 
-void CLKCTRL_init(void);
 void TCD0_init(void);
 void EVENT_SYSTEM_init(void);
 void PORT_init(void);
-
-int main(void)
-{    
-    PORT_init();    
-    EVENT_SYSTEM_init();
-    TCD0_init();
-    
-     while (1) 
-    {
-        ;
-    }
-}
 
 void TCD0_init(void)
 {
@@ -94,14 +81,15 @@ void TCD0_init(void)
     {
         ;
     }
-        /* TCD input clock is 1MHz (4MHz divided by 4) */
+    /* TCD input clock is 1MHz (4MHz divided by 4) */
     TCD0.CTRLA =  TCD_CLKSEL_OSCHF_gc        /* choose the timer's clock */
                |  TCD_CNTPRES_DIV4_gc        /* choose the prescaler */
                |  TCD_ENABLE_bm;             /* enable the timer */
 }
 
 void EVENT_SYSTEM_init(void)
-{   /*PF6 state as event*/
+{
+    /*PF6 state as event*/
     EVSYS.CHANNEL4 = EVSYS_CHANNEL4_PORTF_PIN6_gc;
     
     /* Connect user to event channel 4 */
@@ -119,3 +107,14 @@ void PORT_init(void)
     PORTF.PIN6CTRL = PORT_PULLUPEN_bm;  /* enable pull-up resistor for pin 6 of port F */         
 }
 
+int main(void)
+{    
+    PORT_init();    
+    EVENT_SYSTEM_init();
+    TCD0_init();
+    
+     while (1) 
+    {
+        ;
+    }
+}

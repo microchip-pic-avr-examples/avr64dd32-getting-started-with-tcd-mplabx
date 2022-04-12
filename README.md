@@ -65,11 +65,9 @@ The following configurations must be made for this project:
 
 ### 1.2 Demo
 
-The image below shows the four signals on pins PA4, PA5, PA6 and PA7. PA4 and PA6 are synchronized and PA5 and PA7 are complementary to those.
-<br><img src="images/Controlling_synchronous_signals_using_input_events_demo_1.PNG" width="1000">
+The image below shows the four signals on pins PA4, PA5, PA6 and PA7. PA4 and PA6 are synchronized and PA5 and PA7 are complementary to those. At the red mark it is visible the fault condition detected and output signals being turned off.
+<br><br><img src="images/Controlling_synchronous_signals_using_input_events_demo.png" width="1000">
 
-<br>The following image shows what happens while the fault is detected. The signals stop and wait for the fault to be cleared.
-<br><img src="images/Controlling_synchronous_signals_using_input_events_demo_2.png" width="1000">
 
 ### 1.3 Summary
 
@@ -78,7 +76,7 @@ This application shows how to configure the TCD to produce four signals of 10 kH
 
 ## 2. Generating Complementary Driving Signals
 
-This program shows how to configure the TCD to generate two complementary signals with 50 kHz frequency and 100 ns dead time.
+This program shows how to configure the TCD to generate two non-overlapping, complementary signals with 500 kHz frequency and 200 ns dead-time.
 
 ### 2.1 Setup
 
@@ -87,7 +85,7 @@ The following configurations must be made for this project:
 - System clock is configured at 20 MHz
 - TCD
   - TCD clock source is High Frequency Oscillator at 20 MHz with division factor 1
-  - The TCD is configured in Dual Slope mode with CMPBCLR equal to 0xC8, CMPASET equal to 0x63 and CMPBSET equal to 0x65 (the values from these registers are continuously compared to the counter value, thus controlling the generated waveform and the dead time)
+  - The TCD is configured in Dual Slope mode with CMPBCLR programmed to generate a 2 us periodic signal, CMPASET and CMPBSET are configured to generate two complementary signals with a dead-time of 200ns
   - Channels A and B are enabled (the register that configures channels A and B is under configuration change protection)
 
 | Pin               | Configuration      |
@@ -97,11 +95,8 @@ The following configurations must be made for this project:
 
 ### 2.2 Demo
 
-The image below shows the complementary signals on the PA4 and PA5 pins.
-<br><img src="images/Generating_complementary_driving_signals_demo_1.png" width="700">
-<br>The dead times are showed in the image below.
-<br><img src="images/Generating_complementary_driving_signals_demo_2.png" width="700">
-<br><img src="images/Generating_complementary_driving_signals_demo_3.png" width="700">
+The image below shows the complementary signals on the PA4 and PA5 pins.<br>
+<br><img src="images/Generating_complementary_driving_signals_demo.png" width="1000">
 
 ### 2.3 Summary
 

@@ -17,11 +17,14 @@
     THAT YOU HAVE PAID DIRECTLY TO MICROCHIP FOR THIS SOFTWARE.
 *
 */
-#define SIGNAL_PERIOD_EXAMPLE_VALUE            (0xC8)
-#define SIGNAL_DUTY_CYCLE_EXAMPLE_VALUE        (0x64)
 
 #include <avr/io.h>
 #include <avr/cpufunc.h>
+
+
+#define PERIOD          19  /* f TCD cycle = 20MHz / (2 * (1 + 19) ) = 500kHz */
+#define DUTY_CYCLE      10  /* 1 clk = 50ns, duty cycle = 2 * 10 * 50ns = 1us */
+#define DEAD_TIME        2  /* 1 clk = 50ns, dead time = 2 * 2 * 50ns = 200ns */
 
 /* Default fuses configuration:
 - BOD disabled
@@ -43,69 +46,60 @@ FUSES =
 .WDTCFG = PERIOD_OFF_gc | WINDOW_OFF_gc,
 };
 
-static void CLKCTRL_init(void);
-static void TCD0_init(void);
-static void TCD0_enableOutputChannels(void);
-static void PORT_init(void);
+void CLKCTRL_init(void);
+void TCD0_init(void);
+void PORT_init(void);
 
-int main(void)
+
+void CLKCTRL_init(void)
 {
-    CLKCTRL_init();
-    
-    PORT_init();
-    
-    TCD0_enableOutputChannels();
-    
-    TCD0_init();
-    
-    /* Replace with your application code */
-    while (1) 
-    {
-        ;
-    }
+    /* RUNSTDBY disabled; FREQSEL 20M; AUTOTUNE disabled */
+    ccp_write_io((void*)&(CLKCTRL.OSCHFCTRLA),0x20);
+    /* system clock is configured to 20MHz */
 }
 
-static void CLKCTRL_init(void)
+void TCD0_init(void)
 {
-    //RUNSTDBY disabled; FREQSEL 20M; AUTOTUNE disabled; 
-    ccp_write_io((void*)&(CLKCTRL.OSCHFCTRLA),0x20); 
-}
-
-static void TCD0_init(void)
-{    
+    /* write protected register */
+    ccp_write_io((void*)&(TCD0.FAULTCTRL), TCD_CMPAEN_bm   /* enable channel A */
+                                         | TCD_CMPBEN_bm); /* enable channel B */
+  
     /* set the waveform mode */
     TCD0.CTRLB = TCD_WGMODE_DS_gc;
     
     /* set the signal period */
-    TCD0.CMPBCLR = SIGNAL_PERIOD_EXAMPLE_VALUE;    
+    TCD0.CMPBCLR = PERIOD;
     
-    /* the signals are alternatively active and a small
-       symmetric dead time is needed */
-    TCD0.CMPBSET = SIGNAL_DUTY_CYCLE_EXAMPLE_VALUE + 1;                                        
-    TCD0.CMPASET = SIGNAL_DUTY_CYCLE_EXAMPLE_VALUE - 1;    
-    
+    /* the signals are alternatively active and a
+       symmetric dead time is added */
+    TCD0.CMPASET = DUTY_CYCLE - DEAD_TIME;
+    TCD0.CMPBSET = DUTY_CYCLE + DEAD_TIME;
+
     /* ensure ENRDY bit is set */
     while(!(TCD0.STATUS & TCD_ENRDY_bm))
     {
         ;
     }
-    
+    /* TCD input clock is 20MHz (20MHz divided by 1) */
     TCD0.CTRLA =  TCD_CLKSEL_OSCHF_gc        /* choose the timer's clock */
                |  TCD_CNTPRES_DIV1_gc        /* choose the prescaler */
                |  TCD_ENABLE_bm;             /* enable the timer */
 }
 
-static void TCD0_enableOutputChannels(void)
+void PORT_init(void)
 {
-    /* enable write protected register */
-    CPU_CCP = CCP_IOREG_gc;    
-    
-    TCD0.FAULTCTRL = TCD_CMPAEN_bm             /* enable channel A */
-                   | TCD_CMPBEN_bm;            /* enable channel B */
+    PORTA.DIRSET = PIN4_bm          /* set pin 4 as output */
+                 | PIN5_bm;         /* set pin 5 as output */
 }
 
-static void PORT_init(void)
+int main(void)
 {
-    PORTA.DIR |= PIN4_bm            /* set pin 4 as output */
-              | PIN5_bm;            /* set pin 5 as output */
+    CLKCTRL_init();
+    PORT_init();
+    TCD0_init();
+    
+    while (1) 
+    {
+        ;
+    }
 }
